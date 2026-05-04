@@ -1,0 +1,50 @@
+enum ReportTargetType {
+    REQUEST // Reported help request (spam, fake, harmful)
+    USER // Reported user account (impersonation, fraud)
+    REVIEW // Reported review (abusive, false content)
+}
+
+enum ReportStatus {
+    PENDING // Awaiting admin review
+    REVIEWED // Admin took action (warning, deletion, ban)
+    DISMISSED // Admin reviewed and found no violation
+}
+
+// ── MODEL ────────────────────────────────────────────────────────────────────
+
+model Report {
+    // Primary key
+    id String @id @default(uuid())
+
+    // Who filed the report
+    reportedBy String @map("reported_by") // FK → User
+
+    // Who resolved it (Admin only)
+    resolvedBy String? @map("resolved_by") // FK → User (Admin)
+
+    // Polymorphic target — what is being reported
+    targetType ReportTargetType @map("target_type")
+    targetId   String           @map("target_id") @db.Uuid
+    // NOTE: No hard FK — targetId points to requests.id | users.id | reviews.id
+    //       Enforce referential integrity at the application layer.
+
+    // Report content
+    reason String @db.Text
+
+    // Admin workflow
+    status     ReportStatus @default(PENDING)
+    adminNotes String?      @map("admin_notes") @db.Text // Admin's internal notes / reason for decision
+
+    // Timestamps
+    createdAt  DateTime  @default(now()) @map("created_at")
+    resolvedAt DateTime? @map("resolved_at") // Set when status moves to REVIEWED or DISMISSED
+
+    // ── Relations ──────────────────────────────────────────────────────────────
+    filer    User  @relation("ReportFiler", fields: [reportedBy], references: [id])
+    resolver User? @relation("ReportResolver", fields: [resolvedBy], references: [id])
+
+    // Composite index for polymorphic lookup: WHERE targetType = ? AND targetId = ?
+    @@index([status])
+    @@index([targetType, targetId])
+    @@map("reports")
+}

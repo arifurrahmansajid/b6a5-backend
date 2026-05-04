@@ -1,0 +1,60 @@
+enum DonationStatus {
+    PENDING // Payment intent created, awaiting payment
+    COMPLETED // Payment completed successfully
+    FAILED // Payment failed
+    CANCELLED // Donation cancelled by user or admin
+}
+
+enum PaymentMethod {
+    STRIPE
+    MANUAL // For future: bank_transfer, cash, cheque, bkash, nagad, etc
+}
+
+model Donation {
+    // Primary key
+    id String @id @default(uuid())
+
+    // Targets
+    requestId  String  @map("request_id") // Always required
+    donorId    String  @map("donor_id") // FK → User (must have DONOR type)
+    campaignId String? @map("campaign_id") // Optional — links to an org campaign
+
+    // Financial data
+    amount        Decimal       @db.Decimal(12, 2) // Precise monetary value — never Float
+    currency      String        @default("BDT") @db.VarChar(3) // ISO 4217 e.g. BDT, USD, GBP
+    paymentMethod PaymentMethod @default(STRIPE)
+
+    // Stripe integration
+    stripePaymentIntentId String? @unique @map("stripe_payment_intent_id") // Stripe Payment Intent ID
+    stripeSessionId       String? @unique @map("stripe_session_id") // Stripe Checkout Session ID
+    stripeEventId         String? @unique @map("stripe_event_id") // Last processed Stripe event ID
+
+    // Transaction tracking
+    transactionId String? @map("transaction_id")
+
+    // Lifecycle
+    status DonationStatus @default(PENDING)
+
+    // Metadata (Stripe data for reference)
+    paymentMetadata Json? @map("payment_metadata")
+
+    // Coordination notes (e.g. transfer reference numbers, conditions)
+    notes String? @db.Text
+
+    // Timestamps
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // ── Relations ──────────────────────────────────────────────────────────────
+    request  Request   @relation(fields: [requestId], references: [id])
+    donor    User      @relation("DonorDonations", fields: [donorId], references: [id])
+    campaign Campaign? @relation(fields: [campaignId], references: [id])
+
+    @@index([requestId])
+    @@index([donorId])
+    @@index([campaignId])
+    @@index([status])
+    @@index([stripePaymentIntentId])
+    @@index([stripeSessionId])
+    @@map("donations")
+}

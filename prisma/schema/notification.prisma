@@ -1,0 +1,43 @@
+enum NotificationType {
+    NEW_RESPONSE // Someone responded to your request
+    NEW_MESSAGE // You have an unread message
+    ASSIGNMENT // You have been assigned to a request
+    DONATION_STATUS // A donation you made or received changed status
+    REQUEST_STATUS // Your request moved to IN_PROGRESS or COMPLETED
+    REVIEW_RECEIVED // Someone left you a review
+    ADMIN_VERIFICATION // Your account or org was verified / flagged
+}
+
+model Notification {
+    // Primary key
+    id String @id @default(uuid())
+
+    // Recipient
+    userId String @map("user_id") // FK → User
+
+    // Classification
+    type NotificationType
+
+    // Display content
+    title   String @db.VarChar(255)
+    message String @db.Text
+
+    // Soft polymorphic link to the originating record
+    relatedEntity String? @map("related_entity") @db.VarChar(50)
+    // Values: "request" | "message" | "assignment" | "donation" | "review" | "organization"
+    relatedId     String? @map("related_id") @db.Uuid
+    // UUID of the originating record — used for deep-linking in the frontend
+
+    // Read state
+    isRead Boolean @default(false) @map("is_read")
+
+    // Timestamp — no updatedAt; notifications are append-only
+    createdAt DateTime @default(now()) @map("created_at")
+
+    // ── Relations ──────────────────────────────────────────────────────────────
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@index([isRead]) // For unread count queries: WHERE userId = ? AND isRead = false
+    @@map("notifications")
+}

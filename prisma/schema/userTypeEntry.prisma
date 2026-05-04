@@ -1,0 +1,26 @@
+enum UserType {
+    DONOR // Can pledge and confirm financial donations
+    VOLUNTEER // Can respond to physical/time-based requests
+    ORGANIZATION // Can coordinate, assign volunteers, run campaigns
+}
+
+enum UserTypeStatus {
+    PENDING
+    ACTIVE
+    REJECTED
+    SUSPENDED
+}
+
+model UserTypeEntry {
+    id     String         @id @default(uuid())
+    userId String         @map("user_id")
+    type   UserType
+    status UserTypeStatus @default(PENDING)
+
+    // ── Relations ──────────────────────────────────────────────────────────────
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    // One user can hold each type only once
+    @@unique([userId, type])
+    @@map("user_types")
+}

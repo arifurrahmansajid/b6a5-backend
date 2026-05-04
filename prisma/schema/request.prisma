@@ -1,0 +1,72 @@
+enum Category {
+    MEDICAL // Hospital, medicine, surgery, disability
+    FOOD // Rations, meals, infant nutrition
+    FINANCIAL // Cash, rent, bills, education fees
+    HOUSING // Shelter, furniture, repairs, displacement
+    OTHER // Anything that doesn't fit the above
+}
+
+enum Urgency {
+    LOW // Can wait days to weeks
+    MEDIUM // Should be addressed within days
+    HIGH // Needs attention within 24–48 hours
+    CRITICAL // Life-impacting — needs immediate response
+}
+
+enum HelpType {
+    FINANCIAL // Monetary donations only
+    PHYSICAL // Volunteer time / in-person effort only
+    BOTH // Accepts either or a combination
+}
+
+enum RequestStatus {
+    OPEN // Accepting responses
+    IN_PROGRESS // At least one assignment or donation confirmed
+    COMPLETED // Help has been fully delivered
+    CANCELLED // Withdrawn by owner or removed by Admin
+}
+
+model Request {
+    // Primary key
+    id String @id @default(uuid())
+
+    // Ownership
+    createdBy String @map("created_by") // FK → User
+
+    // Core content
+    title       String @db.VarChar(200)
+    description String @db.Text
+
+    // Classification
+    category Category
+    urgency  Urgency
+    helpType HelpType @map("help_type")
+
+    // Location — city or region only (privacy-preserving)
+    location String? @db.VarChar(150)
+
+    // Lifecycle
+    status      RequestStatus @default(OPEN)
+    isAnonymous Boolean       @default(false) @map("is_anonymous") // Hides owner identity on public feed
+    expiresAt   DateTime?     @map("expires_at") // Auto-set 30 days after creation
+
+    // Timestamps
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // ── Relations ──────────────────────────────────────────────────────────────
+    creator         User         @relation("RequestCreator", fields: [createdBy], references: [id])
+    responses       Response[]
+    assignments     Assignment[]
+    donations       Donation[]
+    messages        Message[]
+    reviews         Review[]
+    linkedCampaigns Campaign[]   @relation("CampaignRequest")
+
+    // ── Indexes (query-critical) ───────────────────────────────────────────────
+    @@index([status]) // Feed filter: active requests
+    @@index([category]) // Feed filter: by category
+    @@index([urgency]) // Feed filter: by urgency
+    @@index([createdBy]) // Profile: user's own requests
+    @@map("requests")
+}

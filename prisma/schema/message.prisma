@@ -1,0 +1,33 @@
+model Message {
+    // Primary key
+    id String @id @default(uuid())
+
+    // Participants
+    senderId   String @map("sender_id") // FK → User
+    receiverId String @map("receiver_id") // FK → User
+
+    // Scope — every message belongs to exactly one request thread
+    requestId String @map("request_id") // FK → Request
+
+    // Content — plain text in MVP; attachments in Phase 2
+    message String @db.Text
+
+    // Read state — used for unread badge counts
+    isRead Boolean @default(false) @map("is_read")
+
+    // Timestamp — no updatedAt; messages are immutable
+    createdAt DateTime @default(now()) @map("created_at")
+
+    // ── Relations ──────────────────────────────────────────────────────────────
+    sender   User    @relation("SentMessages", fields: [senderId], references: [id])
+    receiver User    @relation("ReceivedMessages", fields: [receiverId], references: [id])
+    request  Request @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+    // ── Indexes ────────────────────────────────────────────────────────────────
+    // Composite index for fetching a thread: WHERE requestId = ? AND (senderId = ? OR receiverId = ?)
+    @@index([requestId])
+    @@index([senderId])
+    @@index([receiverId])
+    @@index([isRead]) // For unread count queries
+    @@map("messages")
+}

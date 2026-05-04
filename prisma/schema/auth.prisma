@@ -1,0 +1,99 @@
+enum Role {
+  USER // Default — any registered member
+  ADMIN // Platform operator — full moderation access
+  SUPER_ADMIN // Highest level — full platform control
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  BANNED
+}
+
+model User {
+  id            String     @id @default(uuid())
+  name          String
+  email         String
+  phone         String?    @db.VarChar(20)
+  bio           String?    @db.Text
+  emailVerified Boolean    @default(false)
+  avatarUrl     String?
+  location      String?    @db.VarChar(100)
+  role          Role       @default(USER)
+  status        UserStatus @default(INACTIVE)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  sessions             Session[]
+  accounts             Account[]
+  userTypes            UserTypeEntry[]
+  organization         Organization?
+  createdRequests      Request[]       @relation("RequestCreator")
+  responses            Response[]
+  volunteerAssignments Assignment[]    @relation("VolunteerAssignments")
+  managedAssignments   Assignment[]    @relation("AssignedByUser")
+  donations            Donation[]      @relation("DonorDonations")
+  sentMessages         Message[]       @relation("SentMessages")
+  receivedMessages     Message[]       @relation("ReceivedMessages")
+  notifications        Notification[]
+  writtenReviews       Review[]        @relation("ReviewAuthor")
+  receivedReviews      Review[]        @relation("ReviewTarget")
+  filedReports         Report[]        @relation("ReportFiler")
+  resolvedReports      Report[]        @relation("ReportResolver")
+  verifiedOrgs         Organization[]  @relation("OrgVerifier")
+
+  @@unique([email])
+  @@unique([phone])
+  @@index([email])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id @default(uuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verifications")
+}

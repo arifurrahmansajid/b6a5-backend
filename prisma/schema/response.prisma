@@ -1,0 +1,32 @@
+enum ResponseType {
+    DONATE // Donor offering financial contribution
+    VOLUNTEER // Volunteer offering time / physical effort
+    COORDINATE // Organization offering full coordination
+}
+
+model Response {
+    // Primary key
+    id String @id @default(uuid())
+
+    // Target request and responding user
+    requestId    String       @map("request_id")
+    userId       String       @map("user_id")
+    responseType ResponseType @map("response_type")
+
+    // Optional message to the request owner
+    message String? @db.Text
+
+    // Timestamps
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // ── Relations ──────────────────────────────────────────────────────────────
+    request Request @relation(fields: [requestId], references: [id], onDelete: Cascade)
+    user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    // One response per user per request
+    @@unique([requestId, userId])
+    @@index([requestId])
+    @@index([userId])
+    @@map("responses")
+}

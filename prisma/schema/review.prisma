@@ -1,0 +1,32 @@
+model Review {
+    // Primary key
+    id String @id @default(uuid())
+
+    // Author and target
+    reviewerId   String @map("reviewer_id") // FK → User (person writing the review)
+    targetUserId String @map("target_user_id") // FK → User (person being reviewed)
+
+    // Context — which completed request triggered this review
+    requestId String @map("request_id") // FK → Request
+
+    // Rating — 1 (poor) to 5 (excellent)
+    // SmallInt maps to INT2 in PostgreSQL (2 bytes — sufficient for 1-5 range)
+    rating Int @db.SmallInt
+
+    // Optional written comment
+    comment String? @db.Text
+
+    // Timestamp — no updatedAt; reviews are immutable after 48h (enforced in app)
+    createdAt DateTime @default(now()) @map("created_at")
+
+    // ── Relations ──────────────────────────────────────────────────────────────
+    reviewer   User    @relation("ReviewAuthor", fields: [reviewerId], references: [id])
+    targetUser User    @relation("ReviewTarget", fields: [targetUserId], references: [id])
+    request    Request @relation(fields: [requestId], references: [id])
+
+    // One review per reviewer per target per request
+    @@unique([reviewerId, targetUserId, requestId])
+    @@index([targetUserId]) // For profile trust score aggregation: AVG(rating) WHERE targetUserId = ?
+    @@index([requestId])
+    @@map("reviews")
+}

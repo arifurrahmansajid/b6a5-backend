@@ -1,0 +1,17 @@
+# dependencies
+/node_modules
+
+# prisma
+/src/generated
+/prisma/migrations
+
+# production
+/dist
+
+# env
+.env
+
+# vercel
+.vercel
+
+.vercel

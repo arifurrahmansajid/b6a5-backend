@@ -1,0 +1,33 @@
+model Organization {
+    // Primary key
+    id String @id @default(uuid())
+
+    // Ownership — one User owns one Organization
+    userId String @unique @map("user_id")
+
+    // Public-facing profile
+    orgName            String  @map("org_name") @db.VarChar(200)
+    description        String? @db.Text
+    logoUrl            String? @map("logo_url") // Object-storage URL
+    website            String? @db.VarChar(255)
+    registrationNumber String? @map("registration_number") @db.VarChar(100) // Gov-issued NGO reg
+    contactEmail       String? @map("contact_email") @db.VarChar(255)
+    contactPhone       String? @map("contact_phone") @db.VarChar(20)
+
+    // Verification — set exclusively by Admin
+    isVerified Boolean   @default(false) @map("is_verified")
+    verifiedAt DateTime? @map("verified_at")
+    verifiedBy String?   @map("verified_by") // FK → User (Admin)
+
+    // Timestamps
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // ── Relations ──────────────────────────────────────────────────────────────
+    user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    verifier    User?        @relation("OrgVerifier", fields: [verifiedBy], references: [id])
+    campaigns   Campaign[]
+    assignments Assignment[] @relation("OrgAssignments")
+
+    @@map("organizations")
+}

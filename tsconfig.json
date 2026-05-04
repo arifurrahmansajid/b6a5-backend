@@ -1,0 +1,64 @@
+{
+  "compilerOptions": {
+    // ==========================
+    // File Layout
+    // ==========================
+    "rootDir": "./src", // Source files
+    "outDir": "./dist", // Build output
+
+    // ==========================
+    // Module & Target
+    // ==========================
+    "module": "esnext", // Use modern ES modules
+    "target": "es2023", // Latest JS features
+    "moduleResolution": "bundler", // Node-style module resolution for bundlers
+
+    // ==========================
+    // Outputs
+    // ==========================
+    "sourceMap": true, // Enable source maps
+    "declaration": true, // Generate type definitions
+    "declarationMap": true, // Map declarations to source
+
+    // ==========================
+    // Strict Type Checking
+    // ==========================
+    "noUncheckedIndexedAccess": true, // Accessing arrays/maps may be undefined
+    "exactOptionalPropertyTypes": true, // Optional properties exact type
+    "strict": true, // Enable all strict checks
+
+    // ==========================
+    // Recommended / Safety
+    // ==========================
+    "esModuleInterop": true, // Default interop for commonjs
+    "verbatimModuleSyntax": true, // Preserve import/export syntax
+    "isolatedModules": true, // Each file compiles independently
+    "noUncheckedSideEffectImports": true, // Error on unused import side-effects
+    "moduleDetection": "force", // Force module detection
+    "skipLibCheck": true, // Skip type checks on libs
+    "ignoreDeprecations": "5.0", // Ignore TS deprecation warnings < 5.0
+    "forceConsistentCasingInFileNames": true, // Case-sensitive imports
+
+    // ==========================
+    // Path Aliases
+    // ==========================
+    "paths": {
+      "@/*": ["./src/*"] // Example: "@/services/user" → src/services/user
+    },
+
+    // ==========================
+    // Performance
+    // ==========================
+    "incremental": true // Speed up subsequent builds
+  },
+
+  // ==========================
+  // Files to include
+  // ==========================
+  "include": ["src"],
+
+  // ==========================
+  // Files to exclude
+  // ==========================
+  "exclude": ["node_modules", "dist"]
+}

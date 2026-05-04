@@ -1,0 +1,45 @@
+enum CampaignStatus {
+    DRAFT // Being set up — not yet publicly visible
+    ACTIVE // Live — accepting donations and volunteer responses
+    COMPLETED // Goal reached or end date passed successfully
+    CANCELLED // Terminated before completion
+}
+
+model Campaign {
+    // Primary key
+    id String @id @default(uuid())
+
+    // Ownership
+    orgId String @map("org_id") // FK → Organization
+
+    // Optional link to a specific request this campaign is funding
+    linkedRequestId String? @map("linked_request_id")
+
+    // Public-facing content
+    title       String  @db.VarChar(200)
+    description String? @db.Text
+
+    // Financial targets
+    goalAmount    Decimal @map("goal_amount") @db.Decimal(12, 2)
+    currentAmount Decimal @default(0) @map("current_amount") @db.Decimal(12, 2)
+    // currentAmount = SUM of confirmed donations with this campaignId
+    currency      String  @default("BDT") @db.VarChar(3)
+
+    // Lifecycle
+    status    CampaignStatus @default(DRAFT)
+    startDate DateTime?      @map("start_date")
+    endDate   DateTime?      @map("end_date")
+
+    // Timestamps
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // ── Relations ──────────────────────────────────────────────────────────────
+    organization  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+    linkedRequest Request?     @relation("CampaignRequest", fields: [linkedRequestId], references: [id])
+    donations     Donation[]
+
+    @@index([orgId])
+    @@index([status])
+    @@map("campaigns")
+}
