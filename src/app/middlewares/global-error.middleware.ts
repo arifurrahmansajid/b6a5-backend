@@ -9,7 +9,7 @@ import { handleZodError } from "../utils/zod-error.util";
 export const globalError = async (err: any, req: Request, res: Response, next: NextFunction) => {
   const config = getConfig();
 
-  if (config.nodeEnv === "development") {
+  if (config.nodeEnv === "development" && err.statusCode !== status.UNAUTHORIZED) {
     console.error("❌ [GLOBAL ERROR]", err);
   }
 

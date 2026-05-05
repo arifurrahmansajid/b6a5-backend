@@ -25,6 +25,11 @@ export const auth = (allowedRoles: Role[] = [], allowedTypes: UserType[] = []) =
 
       const sessionToken = cookieUtils.getCookie(req, BETTER_AUTH_SESSION_TOKEN_NAME);
 
+      if (config.nodeEnv === "development" && !sessionToken) {
+        console.debug("🔑 [Auth] Missing session token. Available cookies:", Object.keys(req.cookies || {}), Object.keys(req.signedCookies || {}));
+        console.debug("🔑 [Auth] Looking for:", BETTER_AUTH_SESSION_TOKEN_NAME);
+      }
+
       if (!sessionToken) {
         throw new AppError(status.UNAUTHORIZED, "Unauthorized access! No session token provided.");
       }
