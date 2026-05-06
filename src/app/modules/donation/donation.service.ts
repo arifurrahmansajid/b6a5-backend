@@ -508,6 +508,26 @@ const getReceivedDonations = async (userId: string, query: unknown) => {
   };
 };
 
+/**
+ * Update donation status (admin only)
+ */
+const updateDonationStatus = async (donationId: string, payload: { status: DonationStatus }) => {
+  const donation = await prisma.donation.findUnique({
+    where: { id: donationId },
+  });
+
+  if (!donation) {
+    throw new AppError(status.NOT_FOUND, "Donation not found");
+  }
+
+  const updatedDonation = await prisma.donation.update({
+    where: { id: donationId },
+    data: { status: payload.status },
+  });
+
+  return updatedDonation;
+};
+
 export const donationService = {
   createDonation,
   initiateDonationPayment,
@@ -515,4 +535,5 @@ export const donationService = {
   getAllDonations,
   getMyDonations,
   getReceivedDonations,
+  updateDonationStatus,
 };
