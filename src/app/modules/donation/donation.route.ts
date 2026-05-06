@@ -37,4 +37,13 @@ router.get("/me", auth(), donationController.getMyDonations);
  */
 router.get("/received", auth(), donationController.getReceivedDonations);
 
+/**
+ * Update donation status (admin only)
+ */
+router.patch(
+  "/:donationId/status",
+  auth([Role.ADMIN, Role.SUPER_ADMIN]),
+  donationController.updateDonationStatus,
+);
+
 export const donationRoutes = router;

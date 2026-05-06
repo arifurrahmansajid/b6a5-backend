@@ -25,3 +25,7 @@ export const donationListQuerySchema = paginationUtils.paginationQuerySchema.ext
   status: z.union([z.enum(DonationStatus), z.array(z.enum(DonationStatus))]).optional(),
   search: z.string().optional(),
 });
+
+export const updateDonationStatusSchema = z.object({
+  status: z.nativeEnum(DonationStatus),
+});

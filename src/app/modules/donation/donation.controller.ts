@@ -102,10 +102,29 @@ const getReceivedDonations = asyncHandler(async (req: Request, res: Response) =>
   });
 });
 
+/**
+ * Update donation status (admin only)
+ * @route PATCH /api/v1/donations/:donationId/status
+ */
+const updateDonationStatus = asyncHandler(async (req: Request, res: Response) => {
+  const { donationId } = req.params;
+  const payload = req.body;
+
+  const result = await donationService.updateDonationStatus(donationId, payload);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Donation status updated successfully",
+    data: result,
+  });
+});
+
 export const donationController = {
   createDonation,
   initiateDonationPayment,
   getAllDonations,
   getMyDonations,
   getReceivedDonations,
+  updateDonationStatus,
 };
