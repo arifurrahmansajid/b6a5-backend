@@ -1,17 +1,19 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "installCommand": "npm install --legacy-peer-deps",
-  "functions": {
-    "dist/vercel.js": {
-      "runtime": "nodejs20.x",
-      "includeFiles": "src/generated/prisma/**"
+  "builds": [
+    {
+      "src": "src/app.ts",
+      "use": "@vercel/node",
+      "config": {
+        "bundle": true,
+        "includeFiles": "src/generated/prisma/**"
+      }
     }
-  },
+  ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/dist/vercel.js"
+      "dest": "src/app.ts"
     }
   ]
 }
