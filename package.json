@@ -26,7 +26,6 @@
   "keywords": [],
   "author": "Md. Fahad Hasan",
   "license": "ISC",
-  "packageManager": "pnpm@10.31.0",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/cookie-parser": "^1.4.10",
