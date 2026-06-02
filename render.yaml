@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: b6a5-backend
+    runtime: node
+    buildCommand: npm install --legacy-peer-deps && npx prisma generate
+    startCommand: npx tsx src/server.ts
+    envVars:
+      - key: NODE_ENV
+        value: production
