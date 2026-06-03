@@ -1,48 +1,45 @@
 import "dotenv/config";
 import app from "./app";
-import { connectDatabase } from "./app/config/database";
-import { seedSuperAdmin } from "./app/seeds/supper-admin.seed";
+import { prisma } from "./app/lib/prisma";
 
-let initialized = false;
-let initError: Error | null = null;
+let connected = false;
 
-const init = async () => {
-  if (initialized || initError) return;
-
+// Initialize database connection once per cold start
+const initDatabase = async () => {
+  if (connected) return;
   try {
-    await connectDatabase();
-    await seedSuperAdmin();
-    initialized = true;
-    console.log("✅ Database initialized successfully");
+    await prisma.$connect();
+    connected = true;
+    console.log("✅ Database connected");
   } catch (error) {
-    initError = error as Error;
-    console.error("❌ Initialization failed:", error);
+    console.error("❌ Database connection failed:", error);
     throw error;
   }
 };
 
-// Initialize on first request
+// Middleware to ensure database is connected
 app.use(async (req, res, next) => {
-  if (!initialized && !initError) {
-    try {
-      await init();
-    } catch (error) {
-      return res.status(500).json({
-        success: false,
-        message: "Service initialization failed",
-        error: process.env.NODE_ENV === "development" ? String(error) : undefined,
-      });
+  try {
+    if (!connected) {
+      await initDatabase();
     }
-  }
-
-  if (initError && !initialized) {
+    next();
+  } catch (error) {
+    console.error("❌ Init error:", error);
     return res.status(503).json({
       success: false,
-      message: "Service unavailable - database connection failed",
+      message: "Service temporarily unavailable",
     });
   }
+});
 
-  next();
+// Error handling for unhandled rejections
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Rejection:", reason);
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception:", error);
 });
 
 export default app;
