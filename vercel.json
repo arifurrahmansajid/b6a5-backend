@@ -2,18 +2,22 @@
   "version": 2,
   "builds": [
     {
-      "src": "src/app.ts",
+      "src": "src/vercel-entry.ts",
       "use": "@vercel/node",
       "config": {
         "bundle": true,
-        "includeFiles": "src/generated/prisma/**"
+        "includeFiles": "src/generated/prisma/**",
+        "maxDuration": 30
       }
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "src/app.ts"
+      "dest": "src/vercel-entry.ts"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
