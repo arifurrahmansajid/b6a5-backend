@@ -3,7 +3,11 @@ services:
     name: b6a5-backend
     runtime: node
     buildCommand: npm install --legacy-peer-deps && npx prisma generate
-    startCommand: npx tsx src/server.ts
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: "5000"
+      - key: CORS_ORIGINS
+        value: https://b6a5-frontend.onrender.com,http://localhost:3000
